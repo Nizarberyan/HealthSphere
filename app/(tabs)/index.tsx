@@ -1,98 +1,142 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
+import React, { useState } from 'react';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { WorkoutListItem } from '@/src/components/WorkoutListItem';
+import { Workout } from '@/src/types/workout';
+
+const DUMMY_WORKOUTS: Workout[] = [
+  {
+    id: '1',
+    type: 'course',
+    duration: 45,
+    intensity: 'élevée',
+    date: new Date().toISOString(),
+    notes: 'Course matinale',
+  },
+  {
+    id: '2',
+    type: 'musculation',
+    duration: 60,
+    intensity: 'moyenne',
+    date: new Date(Date.now() - 86400000).toISOString(), // Yesterday
+    notes: 'Séance haut du corps',
+  },
+  {
+    id: '3',
+    type: 'vélo',
+    duration: 120,
+    intensity: 'faible',
+    date: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+  },
+];
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const colorScheme = useColorScheme();
+  const theme = colorScheme === 'dark' ? Colors.dark : Colors.light;
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  // We'll use state here initially just to show it works, 
+  // later we'll move this to Context API and AsyncStorage
+  const [workouts, setWorkouts] = useState<Workout[]>(DUMMY_WORKOUTS);
+
+  const renderItem = ({ item }: { item: Workout }) => (
+    <WorkoutListItem workout={item} />
+  );
+
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+
+      <View style={styles.header}>
+        <Text style={[styles.title, { color: theme.text }]}>Mes Séances</Text>
+      </View>
+
+      <FlatList
+        data={workouts}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <MaterialCommunityIcons name="clipboard-text-outline" size={48} color={theme.icon} />
+            <Text style={[styles.emptyText, { color: theme.icon }]}>Aucune séance enregistrée.</Text>
+            <Text style={[styles.emptySubtext, { color: theme.icon }]}>
+              Commencez par ajouter votre première séance !
+            </Text>
+          </View>
+        }
+      />
+
+      {/* Floating Action Button (FAB) for adding a new workout */}
+      <TouchableOpacity
+        style={[styles.fab, { backgroundColor: theme.tint }]}
+        onPress={() => {
+          // TODO: Navigate to AddWorkoutScreen
+          console.log('Navigate to add workout');
+        }}
+        activeOpacity={0.8}
+      >
+        <MaterialCommunityIcons name="plus" size={32} color="#fff" />
+      </TouchableOpacity>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+    paddingTop: 48,
+  },
+  header: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+  },
+  listContent: {
+    paddingTop: 8,
+    paddingBottom: 100, // Extra padding for the FAB
+  },
+  emptyContainer: {
+    flex: 1,
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
+    paddingTop: 100,
+    paddingHorizontal: 32,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 16,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
+  emptySubtext: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  fab: {
     position: 'absolute',
+    bottom: 24,
+    right: 24,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
   },
 });
