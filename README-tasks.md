@@ -7,38 +7,38 @@
 
 ## Data & State Management
 - [x] Define Data Models (Workout: `id`, `type`, `duration`, `intensity`, `date`, `notes`)
-- [ ] Set up state management via `Context API` (or `useState`/`useReducer`)
-- [ ] Implement `AsyncStorage` for data persistence
-- [ ] Handle initial loading state to restore data on app startup
-- [ ] Implement error handling for storage operations
+- [x] Set up state management via `Context API` (or `useState`/`useReducer`)
+- [x] Implement Drizzle ORM (replacing AsyncStorage) for data persistence
+- [x] Handle initial loading state to restore data on app startup
+- [x] Implement error handling for storage operations
 
 ## Navigation (React Navigation Stack)
-- [ ] Set up Stack Navigator
-- [ ] Create `HomeScreen` (Workout List)
-- [ ] Create `AddWorkoutScreen` (Add Form)
-- [ ] Create `WorkoutDetailsScreen` (Workout Details)
-- [ ] Implement parameter passing between screens
-- [ ] Ensure correct back navigation handling
+- [x] Set up Stack Navigator (using Expo Router)
+- [x] Create `HomeScreen` (Workout List)
+- [x] Create `AddWorkoutScreen` (Add Form)
+- [x] Create `WorkoutDetailsScreen` (Workout Details)
+- [x] Implement parameter passing between screens
+- [x] Ensure correct back navigation handling
 
 ## Core Features (Screens & Components)
 ### HomeScreen
 - [/] Create `WorkoutListItem` component
 - [/] Implement `FlatList` to display recorded workouts
-- [ ] Setup "Add" button to navigate to `AddWorkoutScreen`
+- [x] Setup "Add" button to navigate to `AddWorkoutScreen`
 
 ### AddWorkoutScreen
-- [ ] Create form for:
+- [x] Create form for:
   - Type (course, musculation, vélo, natation, yoga, etc.)
   - Duration (minutes)
   - Intensity (faible, moyenne, élevée)
   - Date
   - Notes (optional)
-- [ ] Validate form inputs
-- [ ] Implement save logic (update state + save to AsyncStorage)
+- [x] Validate form inputs
+- [x] Implement save logic (update state + save to Drizzle ORM)
 
 ### WorkoutDetailsScreen
-- [ ] Display full details of the selected workout
-- [ ] Implement Delete functionality (update state + AsyncStorage)
+- [x] Display full details of the selected workout
+- [x] Implement Delete functionality (update state + Drizzle ORM)
 
 ## UI & Styling
 - [/] Use standard React Native components

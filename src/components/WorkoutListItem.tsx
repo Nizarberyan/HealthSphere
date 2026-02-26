@@ -2,8 +2,9 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Workout, WorkoutType } from '@/src/types/workout';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface WorkoutListItemProps {
     workout: Workout;
@@ -40,8 +41,9 @@ const getIntensityColor = (intensity: string) => {
 };
 
 export const WorkoutListItem = ({ workout }: WorkoutListItemProps) => {
-    const colorScheme = useColorScheme();
+    const { colorScheme } = useColorScheme();
     const theme = colorScheme === 'dark' ? Colors.dark : Colors.light;
+    const router = useRouter();
 
     const dateObject = new Date(workout.date);
     const formattedDate = dateObject.toLocaleDateString('fr-FR', {
@@ -51,7 +53,11 @@ export const WorkoutListItem = ({ workout }: WorkoutListItemProps) => {
     });
 
     return (
-        <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <TouchableOpacity
+            style={[styles.container, { backgroundColor: theme.background }]}
+            activeOpacity={0.7}
+            onPress={() => router.push(`/workout/${workout.id}` as any)}
+        >
             <View style={[styles.iconContainer, { backgroundColor: theme.tint + '20' }]}>
                 <MaterialCommunityIcons name={getIconName(workout.type)} size={28} color={theme.tint} />
             </View>
@@ -78,7 +84,7 @@ export const WorkoutListItem = ({ workout }: WorkoutListItemProps) => {
                     </View>
                 </View>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 };
 

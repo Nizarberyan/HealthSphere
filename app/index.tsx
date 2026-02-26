@@ -1,47 +1,23 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
+import React from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { WorkoutListItem } from '@/src/components/WorkoutListItem';
+import { useWorkouts } from '@/src/context/WorkoutContext';
 import { Workout } from '@/src/types/workout';
+import { Link, useRouter } from 'expo-router'; // Added Link
 
-const DUMMY_WORKOUTS: Workout[] = [
-  {
-    id: '1',
-    type: 'course',
-    duration: 45,
-    intensity: 'élevée',
-    date: new Date().toISOString(),
-    notes: 'Course matinale',
-  },
-  {
-    id: '2',
-    type: 'musculation',
-    duration: 60,
-    intensity: 'moyenne',
-    date: new Date(Date.now() - 86400000).toISOString(), // Yesterday
-    notes: 'Séance haut du corps',
-  },
-  {
-    id: '3',
-    type: 'vélo',
-    duration: 120,
-    intensity: 'faible',
-    date: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-  },
-];
 
 export default function HomeScreen() {
-  const colorScheme = useColorScheme();
+  const { colorScheme } = useColorScheme();
   const theme = colorScheme === 'dark' ? Colors.dark : Colors.light;
+  const router = useRouter();
 
-  // We'll use state here initially just to show it works, 
-  // later we'll move this to Context API and AsyncStorage
-  const [workouts, setWorkouts] = useState<Workout[]>(DUMMY_WORKOUTS);
+  const { workouts, isLoading } = useWorkouts();
 
   const renderItem = ({ item }: { item: Workout }) => (
     <WorkoutListItem workout={item} />
@@ -53,6 +29,12 @@ export default function HomeScreen() {
 
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.text }]}>Mes Séances</Text>
+        {/* Added settings button */}
+        <Link href="/settings" asChild>
+          <TouchableOpacity style={styles.settingsButton}>
+            <MaterialCommunityIcons name="cog-outline" size={28} color={theme.text} />
+          </TouchableOpacity>
+        </Link>
       </View>
 
       <FlatList
@@ -75,8 +57,7 @@ export default function HomeScreen() {
       <TouchableOpacity
         style={[styles.fab, { backgroundColor: theme.tint }]}
         onPress={() => {
-          // TODO: Navigate to AddWorkoutScreen
-          console.log('Navigate to add workout');
+          router.push('/add-workout');
         }}
         activeOpacity={0.8}
       >
@@ -89,12 +70,14 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 48,
   },
   header: {
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   title: {
     fontSize: 28,
@@ -138,5 +121,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4.65,
     elevation: 8,
+  },
+  settingsButton: {
+    padding: 8,
+    borderRadius: 8,
   },
 });
