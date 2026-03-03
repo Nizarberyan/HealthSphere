@@ -9,24 +9,24 @@ export class FavoritesService {
         @InjectModel(Favorite.name) private favoriteModel: Model<FavoriteDocument>,
     ) { }
 
-    async create(exerciseId: string, userId: string = 'default-user'): Promise<Favorite> {
+    async create(exerciseId: string): Promise<Favorite> {
         try {
-            const favorite = new this.favoriteModel({ exerciseId, userId });
+            const favorite = new this.favoriteModel({ exerciseId });
             return await favorite.save();
         } catch (error) {
             if (error.code === 11000) {
-                throw new ConflictException('Exercise is already in favorites for this user');
+                throw new ConflictException('Exercise is already in favorites');
             }
             throw error;
         }
     }
 
-    async findAll(userId: string = 'default-user'): Promise<Favorite[]> {
-        return this.favoriteModel.find({ userId }, { __v: 0 }).exec();
+    async findAll(): Promise<Favorite[]> {
+        return this.favoriteModel.find({}, { __v: 0 }).exec();
     }
 
-    async remove(exerciseId: string, userId: string = 'default-user'): Promise<{ deleted: boolean }> {
-        const result = await this.favoriteModel.deleteOne({ exerciseId, userId }).exec();
+    async remove(exerciseId: string): Promise<{ deleted: boolean }> {
+        const result = await this.favoriteModel.deleteOne({ exerciseId }).exec();
         if (result.deletedCount === 0) {
             throw new NotFoundException('Favorite not found');
         }
