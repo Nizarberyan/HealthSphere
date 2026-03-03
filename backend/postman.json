@@ -34,7 +34,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "http://localhost:3000/exercises/ex-01",
+                            "raw": "http://localhost:3000/exercises/REPLACE_WITH_ID",
                             "protocol": "http",
                             "host": [
                                 "localhost"
@@ -42,7 +42,84 @@
                             "port": "3000",
                             "path": [
                                 "exercises",
-                                "ex-01"
+                                "REPLACE_WITH_ID"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Exercise",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Pull-ups\",\n    \"category\": \"Strength\",\n    \"difficulty\": \"Intermediate\",\n    \"description\": \"Upper body exercise on a pull-up bar.\",\n    \"duration\": 10\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/exercises",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "3000",
+                            "path": [
+                                "exercises"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Exercise",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"difficulty\": \"Advanced\",\n    \"duration\": 15\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/exercises/REPLACE_WITH_ID",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "3000",
+                            "path": [
+                                "exercises",
+                                "REPLACE_WITH_ID"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete Exercise",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:3000/exercises/REPLACE_WITH_ID",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "3000",
+                            "path": [
+                                "exercises",
+                                "REPLACE_WITH_ID"
                             ]
                         }
                     },
@@ -84,7 +161,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"exerciseId\": \"ex-01\"\n}"
+                            "raw": "{\n    \"exerciseId\": \"REPLACE_WITH_ID\"\n}"
                         },
                         "url": {
                             "raw": "http://localhost:3000/favorites",
@@ -106,7 +183,7 @@
                         "method": "DELETE",
                         "header": [],
                         "url": {
-                            "raw": "http://localhost:3000/favorites/ex-01",
+                            "raw": "http://localhost:3000/favorites/REPLACE_WITH_ID",
                             "protocol": "http",
                             "host": [
                                 "localhost"
@@ -114,7 +191,7 @@
                             "port": "3000",
                             "path": [
                                 "favorites",
-                                "ex-01"
+                                "REPLACE_WITH_ID"
                             ]
                         }
                     },

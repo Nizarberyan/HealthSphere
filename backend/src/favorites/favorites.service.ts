@@ -1,6 +1,6 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, isValidObjectId } from 'mongoose';
 import { Favorite, FavoriteDocument } from './schemas/favorite.schema';
 
 @Injectable()
@@ -10,6 +10,9 @@ export class FavoritesService {
     ) { }
 
     async create(exerciseId: string): Promise<Favorite> {
+        if (!isValidObjectId(exerciseId)) {
+            throw new BadRequestException('Invalid exercise ID format');
+        }
         try {
             const favorite = new this.favoriteModel({ exerciseId });
             return await favorite.save();
@@ -26,6 +29,9 @@ export class FavoritesService {
     }
 
     async remove(exerciseId: string): Promise<{ deleted: boolean }> {
+        if (!isValidObjectId(exerciseId)) {
+            throw new BadRequestException('Invalid exercise ID format');
+        }
         const result = await this.favoriteModel.deleteOne({ exerciseId }).exec();
         if (result.deletedCount === 0) {
             throw new NotFoundException('Favorite not found');
