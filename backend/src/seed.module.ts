@@ -1,12 +1,16 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Exercise, ExerciseSchema } from './exercises/schemas/exercise.schema';
+import { Favorite, FavoriteSchema } from './favorites/schemas/favorite.schema';
 import { SeedCommand } from './seed.command';
 
 @Module({
     imports: [
         MongooseModule.forRoot('mongodb://localhost:27017/healthsphere'),
-        MongooseModule.forFeature([{ name: Exercise.name, schema: ExerciseSchema }]),
+        MongooseModule.forFeature([
+            { name: Exercise.name, schema: ExerciseSchema },
+            { name: Favorite.name, schema: FavoriteSchema },
+        ]),
     ],
     providers: [SeedCommand],
 })
