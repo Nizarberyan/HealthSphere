@@ -1,48 +1,42 @@
-import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useWorkouts } from '@/src/context/WorkoutContext';
+import { getWorkoutImage } from '@/src/utils/images';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const getIconName = (type: string) => {
-    switch (type) {
-        case 'course': return 'run';
-        case 'musculation': return 'weight-lifter';
-        case 'vélo': return 'bike';
-        case 'natation': return 'swim';
-        case 'yoga': return 'yoga';
-        default: return 'run';
-    }
-};
-
-const getIntensityColor = (intensity: string) => {
-    switch (intensity) {
-        case 'faible': return '#4CAF50';
-        case 'moyenne': return '#FF9800';
-        case 'élevée': return '#F44336';
-        default: return '#9E9E9E';
-    }
-};
-
 export default function WorkoutDetailsScreen() {
-    const { id } = useLocalSearchParams<{ id: string }>();
     const { colorScheme } = useColorScheme();
+    const isDark = colorScheme === 'dark';
+
+    const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
     const { workouts, deleteWorkout } = useWorkouts();
-    const theme = colorScheme === 'dark' ? Colors.dark : Colors.light;
+
+    const theme = {
+        bg: isDark ? '#121212' : '#F8F9FA',
+        card: isDark ? '#1E1E1E' : '#FFFFFF',
+        textPrimary: isDark ? '#FFF' : '#111827',
+        textSecondary: isDark ? '#aaaaaa' : '#6B7280',
+        border: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+        badgeBg: isDark ? 'rgba(255,153,204,0.2)' : 'rgba(255,153,204,0.2)',
+        badgeText: isDark ? '#FF99CC' : '#E864A5', // Slightly darker pink for light mode text contrast
+        button: isDark ? '#FFF' : '#111827',
+        buttonText: isDark ? '#000' : '#FFF',
+    };
 
     const workout = workouts.find((w) => w.id === id);
 
     if (!workout) {
         return (
-            <SafeAreaView className="flex-1 bg-neutral-100 dark:bg-zinc-900 justify-center items-center">
-                <Stack.Screen options={{ title: 'Introuvable' }} />
-                <Text className="text-lg text-neutral-600 dark:text-neutral-400">Séance introuvable.</Text>
-                <TouchableOpacity onPress={() => router.back()} className="mt-4 px-6 py-3 bg-blue-500 rounded-xl">
-                    <Text className="text-white font-semibold">Retour</Text>
+            <SafeAreaView style={[styles.notFoundContainer, { backgroundColor: theme.bg }]}>
+                <Stack.Screen options={{ headerShown: false }} />
+                <Text style={[styles.notFoundText, { color: theme.textPrimary }]}>Séance introuvable.</Text>
+                <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { backgroundColor: theme.card }]}>
+                    <Text style={[styles.backButtonText, { color: theme.textPrimary }]}>Retour</Text>
                 </TouchableOpacity>
             </SafeAreaView>
         );
@@ -66,7 +60,7 @@ export default function WorkoutDetailsScreen() {
                     text: 'Supprimer',
                     style: 'destructive',
                     onPress: async () => {
-                        await deleteWorkout(id);
+                        await deleteWorkout(id as string);
                         router.back();
                     }
                 }
@@ -75,69 +69,208 @@ export default function WorkoutDetailsScreen() {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-neutral-100 dark:bg-zinc-900">
-            <Stack.Screen options={{ title: 'Détails de la séance', headerBackTitle: 'Retour' }} />
+        <View style={[styles.container, { backgroundColor: theme.bg }]}>
+            <Stack.Screen options={{ headerShown: false }} />
+            <StatusBar style="light" />
 
-            <ScrollView className="flex-1 px-4 pt-6">
-                <View className="bg-white dark:bg-zinc-800 rounded-3xl p-6 shadow-sm mb-6 items-center">
-                    <View className="w-24 h-24 rounded-full bg-blue-100 dark:bg-blue-900/40 justify-center items-center mb-4">
-                        <MaterialCommunityIcons name={getIconName(workout.type)} size={48} color={theme.tint} />
+            <ImageBackground source={{ uri: getWorkoutImage(workout.type) }} style={styles.heroBackground}>
+                {/* Custom Header Actions (Back & Menu) */}
+                <SafeAreaView edges={['top']} style={styles.headerSafeArea}>
+                    <View style={styles.header}>
+                        <TouchableOpacity onPress={() => router.back()} style={styles.iconButton}>
+                            <MaterialCommunityIcons name="arrow-left" size={24} color="#FFF" />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={handleDelete} style={styles.iconButton}>
+                            <MaterialCommunityIcons name="delete-outline" size={24} color="#FFF" />
+                        </TouchableOpacity>
                     </View>
-                    <Text className="text-3xl font-bold text-neutral-800 dark:text-white capitalize mb-2">
-                        {workout.type}
-                    </Text>
-                    <Text className="text-lg text-neutral-500 dark:text-neutral-400 capitalize">
-                        {formattedDate}
-                    </Text>
-                </View>
+                </SafeAreaView>
 
-                <View className="bg-white dark:bg-zinc-800 rounded-2xl p-5 shadow-sm mb-6">
-                    <View className="flex-row justify-between items-center mb-4 pb-4 border-b border-neutral-100 dark:border-zinc-700">
-                        <View className="flex-row items-center">
-                            <MaterialCommunityIcons name="clock-outline" size={24} color={theme.icon} />
-                            <Text className="text-lg font-semibold text-neutral-700 dark:text-neutral-300 ml-3">Durée</Text>
-                        </View>
-                        <Text className="text-lg text-neutral-800 dark:text-white font-bold">{workout.duration} min</Text>
-                    </View>
-
-                    <View className="flex-row justify-between items-center">
-                        <View className="flex-row items-center">
-                            <MaterialCommunityIcons name="lightning-bolt" size={24} color={theme.icon} />
-                            <Text className="text-lg font-semibold text-neutral-700 dark:text-neutral-300 ml-3">Intensité</Text>
-                        </View>
-                        <View className="flex-row items-center">
-                            <View
-                                style={{ backgroundColor: getIntensityColor(workout.intensity) }}
-                                className="w-3 h-3 rounded-full mr-2"
-                            />
-                            <Text className="text-lg text-neutral-800 dark:text-white font-semibold capitalize">
-                                {workout.intensity}
-                            </Text>
-                        </View>
-                    </View>
-                </View>
-
-                {workout.notes && (
-                    <View className="bg-white dark:bg-zinc-800 rounded-2xl p-5 shadow-sm mb-6">
-                        <View className="flex-row items-center mb-3">
-                            <MaterialCommunityIcons name="text-box-outline" size={24} color={theme.icon} />
-                            <Text className="text-lg font-semibold text-neutral-700 dark:text-neutral-300 ml-3">Notes</Text>
-                        </View>
-                        <Text className="text-base text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                            {workout.notes}
+                {/* Main Content Area (Overlay text and Bottom Sheet) */}
+                <View style={styles.mainContent}>
+                    <View style={styles.heroTextContainer}>
+                        <Text style={styles.heroTextType} adjustsFontSizeToFit numberOfLines={1}>
+                            {workout.type.toUpperCase()}
                         </Text>
                     </View>
-                )}
 
-                <TouchableOpacity
-                    onPress={handleDelete}
-                    className="flex-row justify-center items-center py-4 bg-red-100 dark:bg-red-500/10 rounded-2xl mt-4 mb-12"
-                >
-                    <MaterialCommunityIcons name="delete-outline" size={24} color="#EF4444" />
-                    <Text className="text-red-500 font-bold text-lg ml-2">Supprimer la séance</Text>
-                </TouchableOpacity>
+                    <View style={[styles.bottomSheet, { backgroundColor: theme.card }]}>
+                        <ScrollView contentContainerStyle={styles.bottomSheetContent} showsVerticalScrollIndicator={false}>
+                            <View style={styles.sheetHeader}>
+                                <Text style={[styles.sheetTitle, { color: theme.textPrimary }]}>DÉTAILS SÉANCE</Text>
+                                <View style={[styles.durationBadge, { backgroundColor: theme.badgeBg }]}>
+                                    <MaterialCommunityIcons name="clock-outline" size={16} color={theme.badgeText} />
+                                    <Text style={[styles.durationText, { color: theme.badgeText }]}>{workout.duration} MIN</Text>
+                                </View>
+                            </View>
 
-            </ScrollView>
-        </SafeAreaView>
+                            <View style={[styles.infoRow, { borderBottomColor: theme.border }]}>
+                                <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Date</Text>
+                                <Text style={[styles.infoValue, { color: theme.textPrimary }]}>{formattedDate}</Text>
+                            </View>
+
+                            <View style={[styles.infoRow, { borderBottomColor: theme.border }]}>
+                                <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Intensité</Text>
+                                <Text style={[styles.infoValue, { color: theme.textPrimary, textTransform: 'capitalize' }]}>{workout.intensity}</Text>
+                            </View>
+
+                            {workout.notes ? (
+                                <View style={styles.notesSection}>
+                                    <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Notes</Text>
+                                    <Text style={[styles.notesText, { color: theme.textPrimary }]}>{workout.notes}</Text>
+                                </View>
+                            ) : null}
+
+                            <TouchableOpacity style={[styles.primaryButton, { backgroundColor: theme.button }]} onPress={() => router.back()}>
+                                <Text style={[styles.primaryButtonText, { color: theme.buttonText }]}>TERMINER</Text>
+                            </TouchableOpacity>
+                        </ScrollView>
+                    </View>
+                </View>
+            </ImageBackground>
+        </View>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#0A0A0A',
+    },
+    heroBackground: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
+    },
+    headerSafeArea: {
+        zIndex: 10,
+    },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        paddingTop: 16,
+    },
+    iconButton: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    mainContent: {
+        flex: 1,
+        justifyContent: 'flex-end',
+    },
+    heroTextContainer: {
+        paddingHorizontal: 20,
+        marginBottom: 20,
+    },
+    heroTextType: {
+        color: '#FFF',
+        fontSize: 64,
+        fontWeight: '900',
+        lineHeight: 70,
+        textShadowColor: 'rgba(0, 0, 0, 0.75)',
+        textShadowOffset: { width: 0, height: 4 },
+        textShadowRadius: 8,
+    },
+    bottomSheet: {
+        borderTopLeftRadius: 40,
+        borderTopRightRadius: 40,
+        height: '50%',
+        paddingHorizontal: 24,
+        paddingTop: 32,
+    },
+    bottomSheetContent: {
+        paddingBottom: 40,
+    },
+    sheetHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    sheetTitle: {
+        fontSize: 24,
+        fontWeight: '900',
+        color: '#000',
+    },
+    durationBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255,255,255,0.4)',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 16,
+        gap: 4,
+    },
+    durationText: {
+        fontSize: 14,
+        fontWeight: '800',
+        color: '#000',
+    },
+    infoRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 16,
+        paddingBottom: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(0,0,0,0.1)',
+    },
+    infoLabel: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: 'rgba(0,0,0,0.6)',
+    },
+    infoValue: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#000',
+    },
+    notesSection: {
+        marginBottom: 24,
+    },
+    notesText: {
+        marginTop: 8,
+        fontSize: 16,
+        lineHeight: 24,
+        color: '#000',
+        fontWeight: '500',
+    },
+    primaryButton: {
+        backgroundColor: '#000',
+        paddingVertical: 18,
+        borderRadius: 30,
+        alignItems: 'center',
+        marginTop: 16,
+    },
+    primaryButtonText: {
+        color: '#FFF',
+        fontSize: 16,
+        fontWeight: '800',
+    },
+    notFoundContainer: {
+        flex: 1,
+        backgroundColor: '#0A0A0A',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    notFoundText: {
+        fontSize: 18,
+        color: '#FFF',
+    },
+    backButton: {
+        marginTop: 16,
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        backgroundColor: '#333',
+        borderRadius: 12,
+    },
+    backButtonText: {
+        color: '#FFF',
+        fontWeight: '600',
+    }
+});

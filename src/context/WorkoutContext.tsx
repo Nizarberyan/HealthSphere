@@ -53,7 +53,7 @@ export const WorkoutProvider = ({ children }: { children: ReactNode }) => {
     const addWorkout = async (workoutData: Omit<Workout, 'id'>) => {
         try {
             setError(null);
-            const id = Date.now().toString(); // Generate simple ID since SQLite auto-increment is on integers, but we use string ID
+            const id = Date.now().toString(); 
             const newDate = new Date(workoutData.date).toISOString();
 
             const newDbWorkout = {

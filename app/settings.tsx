@@ -1,38 +1,55 @@
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Stack } from 'expo-router';
-import { Switch, Text, View } from 'react-native';
+import { Stack, useRouter } from 'expo-router';
+import { StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SettingsScreen() {
     const { colorScheme, setColorScheme } = useColorScheme();
     const isDark = colorScheme === 'dark';
+    const router = useRouter();
+
+    const theme = {
+        bg: isDark ? '#121212' : '#F8F9FA',
+        card: isDark ? '#1E1E1E' : '#FFFFFF',
+        textPrimary: isDark ? '#FFF' : '#111827',
+        textSecondary: isDark ? '#888' : '#6B7280',
+        switchTrackOff: isDark ? '#333' : '#E5E7EB',
+    };
 
     const toggleTheme = () => {
         setColorScheme(isDark ? 'light' : 'dark');
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-neutral-100 dark:bg-zinc-900">
-            <Stack.Screen options={{ title: 'Paramètres' }} />
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
+            <Stack.Screen options={{
+                title: 'PARAMÈTRES',
+                headerStyle: { backgroundColor: theme.bg },
+                headerTintColor: theme.textPrimary,
+                headerTitleStyle: { fontWeight: '800' },
+                headerLeft: () => (
+                    <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 8 }}>
+                        <MaterialCommunityIcons name="arrow-left" size={24} color={theme.textPrimary} />
+                    </TouchableOpacity>
+                )
+            }} />
 
-            <View className="p-4 mt-4">
-                <Text className="text-xl font-bold text-neutral-800 dark:text-neutral-100 mb-6">Affichage</Text>
+            <View style={styles.content}>
+                <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>Préférences</Text>
 
-                <View className="bg-white dark:bg-zinc-800 rounded-2xl p-4 flex-row items-center justify-between border border-neutral-200 dark:border-zinc-700">
-                    <View className="flex-row items-center space-x-3">
-                        <View className={`w-10 h-10 rounded-full items-center justify-center ${isDark ? 'bg-indigo-500/20' : 'bg-amber-500/20'}`}>
+                <View style={[styles.settingCard, { backgroundColor: theme.card }]}>
+                    <View style={styles.settingRow}>
+                        <View style={[styles.iconContainer, { backgroundColor: isDark ? 'rgba(255,153,204,0.2)' : 'rgba(160,232,207,0.2)' }]}>
                             <MaterialCommunityIcons
                                 name={isDark ? "weather-night" : "white-balance-sunny"}
                                 size={24}
-                                color={isDark ? "#818cf8" : "#f59e0b"}
+                                color={isDark ? "#FF99CC" : "#A0E8CF"}
                             />
                         </View>
-                        <View className="ml-3">
-                            <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">
-                                Mode Sombre
-                            </Text>
-                            <Text className="text-sm text-neutral-500 dark:text-neutral-400">
+                        <View style={styles.settingTextContainer}>
+                            <Text style={[styles.settingTitle, { color: theme.textPrimary }]}>Mode Sombre</Text>
+                            <Text style={[styles.settingSubtitle, { color: theme.textSecondary }]}>
                                 {isDark ? 'Activé' : 'Désactivé'}
                             </Text>
                         </View>
@@ -41,11 +58,73 @@ export default function SettingsScreen() {
                     <Switch
                         value={isDark}
                         onValueChange={toggleTheme}
-                        trackColor={{ false: '#d4d4d8', true: '#4f46e5' }}
-                        thumbColor={isDark ? '#ffffff' : '#f4f4f5'}
+                        trackColor={{ false: theme.switchTrackOff, true: '#FF99CC' }}
+                        thumbColor={'#ffffff'}
                     />
                 </View>
+
+                <Text style={[styles.infoText, { color: theme.textSecondary }]}>Note : L'interface est optimisée pour le Mode Sombre basé sur la maquette de conception.</Text>
             </View>
         </SafeAreaView>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#121212',
+    },
+    content: {
+        padding: 24,
+    },
+    sectionTitle: {
+        color: '#FFF',
+        fontSize: 16,
+        fontWeight: '700',
+        marginBottom: 16,
+        textTransform: 'uppercase',
+    },
+    settingCard: {
+        backgroundColor: '#1E1E1E',
+        borderRadius: 24,
+        padding: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 16,
+    },
+    settingRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+    },
+    iconContainer: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 16,
+    },
+    settingTextContainer: {
+        flex: 1,
+    },
+    settingTitle: {
+        color: '#FFF',
+        fontSize: 18,
+        fontWeight: '700',
+        marginBottom: 4,
+    },
+    settingSubtitle: {
+        color: '#888',
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    infoText: {
+        color: '#666',
+        fontSize: 14,
+        fontStyle: 'italic',
+        marginTop: 8,
+        textAlign: 'center'
+    }
+});
