@@ -19,11 +19,11 @@ export class ExercisesService implements OnModuleInit {
     }
 
     async findAll(): Promise<Exercise[]> {
-        return this.exerciseModel.find({}, { _id: 0, __v: 0 }).exec();
+        return this.exerciseModel.find({}, { __v: 0 }).exec();
     }
 
     async findOne(id: string): Promise<Exercise> {
-        const exercise = await this.exerciseModel.findOne({ id }, { _id: 0, __v: 0 }).exec();
+        const exercise = await this.exerciseModel.findById(id, { __v: 0 }).exec();
         if (!exercise) {
             throw new NotFoundException(`Exercise with id ${id} not found`);
         }

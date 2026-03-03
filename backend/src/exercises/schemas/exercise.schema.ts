@@ -6,9 +6,6 @@ export type ExerciseDocument = Exercise & Document;
 @Schema()
 export class Exercise {
     @Prop()
-    id: string;
-
-    @Prop()
     name: string;
 
     @Prop()

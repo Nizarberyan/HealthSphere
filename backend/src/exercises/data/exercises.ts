@@ -1,6 +1,5 @@
 export const initialExercises = [
     {
-        id: 'ex-01',
         name: 'Push-ups',
         category: 'Strength',
         difficulty: 'Beginner',
@@ -8,7 +7,6 @@ export const initialExercises = [
         duration: 10,
     },
     {
-        id: 'ex-02',
         name: 'Squats',
         category: 'Strength',
         difficulty: 'Beginner',
@@ -16,7 +14,6 @@ export const initialExercises = [
         duration: 15,
     },
     {
-        id: 'ex-03',
         name: 'Plank',
         category: 'Core',
         difficulty: 'Intermediate',
@@ -24,7 +21,6 @@ export const initialExercises = [
         duration: 5,
     },
     {
-        id: 'ex-04',
         name: 'Jumping Jacks',
         category: 'Cardio',
         difficulty: 'Beginner',
@@ -32,7 +28,6 @@ export const initialExercises = [
         duration: 10,
     },
     {
-        id: 'ex-05',
         name: 'Burpees',
         category: 'Cardio',
         difficulty: 'Advanced',
