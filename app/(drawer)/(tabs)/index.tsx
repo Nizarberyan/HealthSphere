@@ -4,26 +4,12 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import Animated, { FadeInDown, FadeOutUp, LinearTransition } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { WorkoutListItem } from '@/src/components/WorkoutListItem';
 import { useWorkouts } from '@/src/context/WorkoutContext';
-import { Workout, WorkoutType } from '@/src/types/workout';
 import { getWorkoutImage } from '@/src/utils/images';
 
 const AVATAR_IMAGE_URL = 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=200&auto=format&fit=crop';
-
-const FILTER_TABS: { label: string; value: WorkoutType | 'All' }[] = [
-  { label: 'Tracker', value: 'All' },
-  { label: 'Course', value: 'course' },
-  { label: 'Muscul', value: 'musculation' },
-  { label: 'Vélo', value: 'vélo' },
-  { label: 'Natat', value: 'natation' },
-  { label: 'Yoga', value: 'yoga' },
-  { label: 'Autre', value: 'autre' },
-];
-
 
 export default function HomeScreen() {
   const { colorScheme } = useColorScheme();
@@ -39,8 +25,7 @@ export default function HomeScreen() {
   };
 
   const router = useRouter();
-  const { workouts, isLoading } = useWorkouts();
-  const [selectedFilter, setSelectedFilter] = useState<WorkoutType | 'All'>('All');
+  const { workouts } = useWorkouts();
 
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
     const d = new Date();
@@ -60,27 +45,21 @@ export default function HomeScreen() {
     };
   });
 
-  const filteredWorkouts = workouts.filter((workout) => {
+  const dailyWorkouts = workouts.filter((workout) => {
     const workoutDate = new Date(workout.date);
     workoutDate.setHours(0, 0, 0, 0);
-
-    const matchesType = selectedFilter === 'All' ? true : workout.type === selectedFilter;
-    const matchesDate = workoutDate.getTime() === selectedDate.getTime();
-
-    return matchesType && matchesDate;
+    return workoutDate.getTime() === selectedDate.getTime();
   });
 
-  const renderItem = ({ item }: { item: Workout }) => (
-    <Animated.View entering={FadeInDown} exiting={FadeOutUp} style={{ flex: 1, margin: 4, maxWidth: '48%' }}>
-      <WorkoutListItem workout={item} />
-    </Animated.View>
-  );
+  const dailyDuration = dailyWorkouts.reduce((acc, current) => acc + current.duration, 0);
 
-  const totalDuration = filteredWorkouts.reduce((acc, current) => acc + current.duration, 0);
-  const heroText = selectedFilter === 'All' ? 'WORKOUT' : selectedFilter.toUpperCase();
+  // Global stats
+  const totalWorkouts = workouts.length;
+  const totalDuration = workouts.reduce((acc, current) => acc + current.duration, 0);
+  const totalCalories = totalDuration * 8; // approx 8 calories per minute
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]} edges={['top']}>
       <StatusBar style={isDark ? "light" : "dark"} />
 
       {/* Header */}
@@ -110,27 +89,29 @@ export default function HomeScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <Text style={[styles.pageTitle, { color: theme.textPrimary }]}>Progress</Text>
+        <Text style={[styles.pageTitle, { color: theme.textPrimary }]}>Statistiques</Text>
 
-        {/* Filters */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterContainer}>
-          {FILTER_TABS.map((tab) => {
-            const isActive = selectedFilter === tab.value;
-            return (
-              <TouchableOpacity
-                key={tab.value}
-                onPress={() => setSelectedFilter(tab.value as any)}
-                style={[styles.filterChip, { borderColor: theme.chipBorder }, isActive && styles.filterChipActive]}
-              >
-                <Text style={[styles.filterText, { color: theme.textSecondary }, isActive && styles.filterTextActive]}>
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
+        {/* Global Stats Grid */}
+        <View style={styles.statsGrid}>
+          <View style={[styles.statCard, { backgroundColor: theme.card }]}>
+            <MaterialCommunityIcons name="dumbbell" size={28} color="#FF99CC" />
+            <Text style={[styles.statValue, { color: theme.textPrimary }]}>{totalWorkouts}</Text>
+            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Séances</Text>
+          </View>
+          <View style={[styles.statCard, { backgroundColor: theme.card }]}>
+            <MaterialCommunityIcons name="clock-outline" size={28} color="#A0E8CF" />
+            <Text style={[styles.statValue, { color: theme.textPrimary }]}>{totalDuration}m</Text>
+            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Temps</Text>
+          </View>
+          <View style={[styles.statCard, { backgroundColor: theme.card }]}>
+            <MaterialCommunityIcons name="fire" size={28} color="#FFD166" />
+            <Text style={[styles.statValue, { color: theme.textPrimary }]}>{totalCalories}</Text>
+            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Kcal</Text>
+          </View>
+        </View>
 
         {/* Date Strip */}
+        <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>Calendrier</Text>
         <View style={styles.dateStrip}>
           {dateStripDays.map((item, index) => {
             const isActive = item.date.getTime() === selectedDate.getTime();
@@ -155,9 +136,9 @@ export default function HomeScreen() {
           })}
         </View>
 
-        {/* Hero Card */}
+        {/* Hero Card for today */}
         <TouchableOpacity activeOpacity={0.9} onPress={() => router.push('/add-workout')} style={styles.heroCardContainer}>
-          <ImageBackground source={{ uri: getWorkoutImage(selectedFilter) }} style={styles.heroImage} imageStyle={styles.heroImageStyle}>
+          <ImageBackground source={{ uri: getWorkoutImage('All') }} style={styles.heroImage} imageStyle={styles.heroImageStyle}>
             <View style={styles.heroOverlay}>
               <View style={styles.addBtnContainer}>
                 <View style={styles.addBtn}>
@@ -166,41 +147,23 @@ export default function HomeScreen() {
               </View>
 
               <View style={styles.heroContent}>
-                <Text style={styles.heroBigText} numberOfLines={1} adjustsFontSizeToFit>{heroText}</Text>
+                <Text style={styles.heroBigText} numberOfLines={1} adjustsFontSizeToFit>SÉANCES</Text>
                 <View style={styles.heroStatsRow}>
-                  <Text style={styles.heroStatsBig}>{totalDuration}</Text>
+                  <Text style={styles.heroStatsBig}>{dailyDuration}</Text>
                   <Text style={styles.heroStatsSmall}>MIN TRAINED</Text>
                 </View>
               </View>
 
               <View style={styles.heroRightBar}>
-                <Text style={styles.heroRightBarText}>100%</Text>
+                <Text style={styles.heroRightBarText}>{dailyWorkouts.length} S.</Text>
                 <View style={styles.barTrack}>
                   <View style={styles.barFill}></View>
                 </View>
-                <MaterialCommunityIcons name="cog-outline" size={20} color="#666" style={{ marginTop: 8 }} />
               </View>
             </View>
           </ImageBackground>
         </TouchableOpacity>
 
-        {/* Workout Grid */}
-        <View style={{ paddingHorizontal: 16 }}>
-          <Animated.FlatList
-            data={filteredWorkouts}
-            keyExtractor={(item) => item.id}
-            renderItem={renderItem}
-            numColumns={2}
-            scrollEnabled={false}
-            itemLayoutAnimation={LinearTransition}
-            columnWrapperStyle={{ gap: 8 }}
-            ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <Text style={{ color: '#666', textAlign: 'center', marginTop: 32 }}>Aucune séance pour ce filtre.</Text>
-              </View>
-            }
-          />
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -294,31 +257,37 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 20,
   },
-  filterContainer: {
-    paddingHorizontal: 16,
-    gap: 12,
-    paddingBottom: 24,
-  },
-  filterChip: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: '#333',
-    backgroundColor: 'transparent',
-  },
-  filterChipActive: {
-    backgroundColor: '#FF99CC',
-    borderColor: '#FF99CC',
-  },
-  filterText: {
-    color: '#888',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  filterTextActive: {
-    color: '#000',
+  sectionTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
+    paddingHorizontal: 20,
+    marginBottom: 16,
+    marginTop: 8,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  statCard: {
+    flex: 1,
+    marginHorizontal: 4,
+    borderRadius: 20,
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   dateStrip: {
     flexDirection: 'row',
@@ -391,7 +360,7 @@ const styles = StyleSheet.create({
   },
   heroBigText: {
     color: '#FF99CC',
-    fontSize: 48,
+    fontSize: 36,
     fontWeight: '900',
     textTransform: 'uppercase',
     letterSpacing: 2,
@@ -405,7 +374,7 @@ const styles = StyleSheet.create({
   },
   heroStatsBig: {
     color: '#FFF',
-    fontSize: 40,
+    fontSize: 36,
     fontWeight: 'bold',
   },
   heroStatsSmall: {
@@ -441,8 +410,5 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '60%',
     backgroundColor: '#FF99CC',
-  },
-  emptyContainer: {
-    padding: 24,
   },
 });

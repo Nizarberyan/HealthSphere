@@ -25,7 +25,7 @@ export default function DrawerLayout() {
         }}
       >
         <Drawer.Screen
-          name="index"
+          name="(tabs)"
           options={{
             drawerLabel: 'Accueil',
             title: 'HealthSphere',
