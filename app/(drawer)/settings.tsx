@@ -28,11 +28,7 @@ export default function SettingsScreen() {
                 headerStyle: { backgroundColor: theme.bg },
                 headerTintColor: theme.textPrimary,
                 headerTitleStyle: { fontWeight: '800' },
-                headerLeft: () => (
-                    <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 8 }}>
-                        <MaterialCommunityIcons name="arrow-left" size={24} color={theme.textPrimary} />
-                    </TouchableOpacity>
-                )
+               
             }} />
 
             <View style={styles.content}>
@@ -63,7 +59,6 @@ export default function SettingsScreen() {
                     />
                 </View>
 
-                <Text style={[styles.infoText, { color: theme.textSecondary }]}>Note : L'interface est optimisée pour le Mode Sombre basé sur la maquette de conception.</Text>
             </View>
         </SafeAreaView>
     );
