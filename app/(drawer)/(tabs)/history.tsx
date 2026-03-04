@@ -116,7 +116,7 @@ export default function HistoryScreen() {
     );
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]} edges={['top']}>
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]} edges={[]}>
             <StatusBar style={isDark ? "light" : "dark"} />
 
             <View style={styles.header}>

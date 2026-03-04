@@ -61,7 +61,7 @@ export default function HomeScreen() {
   const totalCalories = totalDuration * 8; // approx 8 calories per minute
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]} edges={[]}>
       <StatusBar style={isDark ? "light" : "dark"} />
 
       {/* Header */}
