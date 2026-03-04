@@ -3,6 +3,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useFavorites } from '../context/FavoritesContext';
 
 interface WorkoutListItemProps {
     workout: Workout;
@@ -21,17 +22,19 @@ const getIconName = (type: WorkoutType) => {
 
 const getCardColor = (type: WorkoutType) => {
     switch (type) {
-        case 'course': return '#FF99CC'; // Pink
-        case 'musculation': return '#A5D6A7'; // Green
-        case 'vélo': return '#80DEEA'; // Cyan
-        case 'natation': return '#90CAF9'; // Blue
-        case 'yoga': return '#E1BEE7'; // Purple
-        default: return '#FFE082'; // Yellow/Orange
+        case 'course': return '#FF99CC';
+        case 'musculation': return '#A5D6A7';
+        case 'vélo': return '#80DEEA';
+        case 'natation': return '#90CAF9';
+        case 'yoga': return '#E1BEE7';
+        default: return '#FFE082';
     }
 };
 
 export const WorkoutListItem = ({ workout }: WorkoutListItemProps) => {
     const router = useRouter();
+    const { isFavorite, toggleFavorite } = useFavorites();
+    const favorited = isFavorite(workout.id);
 
     return (
         <TouchableOpacity
@@ -43,8 +46,18 @@ export const WorkoutListItem = ({ workout }: WorkoutListItemProps) => {
                 <View style={styles.iconCircle}>
                     <MaterialCommunityIcons name={getIconName(workout.type)} size={24} color="#000" />
                 </View>
-                <TouchableOpacity activeOpacity={0.6}>
-                    <MaterialCommunityIcons name="heart-outline" size={26} color="#000" />
+                <TouchableOpacity
+                    activeOpacity={0.6}
+                    onPress={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(workout.id);
+                    }}
+                >
+                    <MaterialCommunityIcons
+                        name={favorited ? 'heart' : 'heart-outline'}
+                        size={26}
+                        color={favorited ? '#000' : '#000'}
+                    />
                 </TouchableOpacity>
             </View>
 

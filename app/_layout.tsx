@@ -6,6 +6,7 @@ import 'react-native-reanimated';
 import '../global.css';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { FavoritesProvider } from '@/src/context/FavoritesContext';
 import { WorkoutProvider } from '@/src/context/WorkoutContext';
 import { useEffect } from 'react';
 import { View } from 'react-native';
@@ -25,21 +26,23 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <WorkoutProvider>
-          <View style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#121212' : '#F8F9FA' }}>
-            <Stack screenOptions={{ contentStyle: { backgroundColor: colorScheme === 'dark' ? '#121212' : '#F8F9FA' } }}>
-              <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
-              <Stack.Screen name="add-workout" options={{ presentation: 'modal', title: 'Ajouter une séance' }} />
-              <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-              <Stack.Screen
-                name="workout/[id]"
-                options={{
-                  headerShown: false,
-                  contentStyle: { backgroundColor: colorScheme === 'dark' ? '#121212' : '#F8F9FA' },
-                }}
-              />
-            </Stack>
-          </View>
-          <StatusBar style="auto" />
+          <FavoritesProvider>
+            <View style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#121212' : '#F8F9FA' }}>
+              <Stack screenOptions={{ contentStyle: { backgroundColor: colorScheme === 'dark' ? '#121212' : '#F8F9FA' } }}>
+                <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
+                <Stack.Screen name="add-workout" options={{ presentation: 'modal', title: 'Ajouter une séance' }} />
+                <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+                <Stack.Screen
+                  name="workout/[id]"
+                  options={{
+                    headerShown: false,
+                    contentStyle: { backgroundColor: colorScheme === 'dark' ? '#121212' : '#F8F9FA' },
+                  }}
+                />
+              </Stack>
+            </View>
+            <StatusBar style="auto" />
+          </FavoritesProvider>
         </WorkoutProvider>
       </ThemeProvider>
     </SafeAreaProvider>
