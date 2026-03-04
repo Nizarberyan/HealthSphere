@@ -43,6 +43,9 @@ export const WorkoutListItem = ({ workout }: WorkoutListItemProps) => {
                 <View style={styles.iconCircle}>
                     <MaterialCommunityIcons name={getIconName(workout.type)} size={24} color="#000" />
                 </View>
+                <TouchableOpacity activeOpacity={0.6}>
+                    <MaterialCommunityIcons name="heart-outline" size={26} color="#000" />
+                </TouchableOpacity>
             </View>
 
             <View style={styles.bottomContent}>
@@ -65,7 +68,8 @@ const styles = StyleSheet.create({
     },
     topRow: {
         flexDirection: 'row',
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
     iconCircle: {
         width: 44,

@@ -14,7 +14,7 @@ export default function WorkoutDetailsScreen() {
 
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
-    const { workouts, deleteWorkout } = useWorkouts();
+    const { workouts, deleteWorkout, updateWorkout } = useWorkouts();
 
     const theme = {
         bg: isDark ? '#121212' : '#F8F9FA',
@@ -68,6 +68,18 @@ export default function WorkoutDetailsScreen() {
         );
     };
 
+    const handleMarkAsDone = async () => {
+        if (!workout) return;
+
+        await updateWorkout({
+            ...workout,
+            status: 'terminé'
+        });
+
+        Alert.alert('Félicitations !', 'Votre séance a été marquée comme terminée.');
+        router.back();
+    };
+
     return (
         <View style={[styles.container, { backgroundColor: theme.bg }]}>
             <Stack.Screen options={{ headerShown: false }} />
@@ -114,6 +126,22 @@ export default function WorkoutDetailsScreen() {
                                 <Text style={[styles.infoValue, { color: theme.textPrimary, textTransform: 'capitalize' }]}>{workout.intensity}</Text>
                             </View>
 
+                            <View style={[styles.infoRow, { borderBottomColor: theme.border }]}>
+                                <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Statut</Text>
+                                <View style={{
+                                    paddingHorizontal: 12,
+                                    paddingVertical: 4,
+                                    borderRadius: 12,
+                                    backgroundColor: workout.status === 'terminé' ? 'rgba(160, 232, 207, 0.2)' : 'rgba(255, 209, 102, 0.2)',
+                                }}>
+                                    <Text style={{
+                                        fontSize: 12,
+                                        fontWeight: '800',
+                                        color: workout.status === 'terminé' ? '#A0E8CF' : '#FFD166',
+                                    }}>{workout.status.toUpperCase()}</Text>
+                                </View>
+                            </View>
+
                             {workout.notes ? (
                                 <View style={styles.notesSection}>
                                     <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Notes</Text>
@@ -121,9 +149,20 @@ export default function WorkoutDetailsScreen() {
                                 </View>
                             ) : null}
 
-                            <TouchableOpacity style={[styles.primaryButton, { backgroundColor: theme.button }]} onPress={() => router.back()}>
-                                <Text style={[styles.primaryButtonText, { color: theme.buttonText }]}>TERMINER</Text>
-                            </TouchableOpacity>
+                            {workout.status === 'prévu' ? (
+                                <TouchableOpacity
+                                    style={[styles.primaryButton, { backgroundColor: theme.button }]}
+                                    onPress={handleMarkAsDone}
+                                >
+                                    <MaterialCommunityIcons name="check-bold" size={20} color={theme.buttonText} style={{ marginRight: 8 }} />
+                                    <Text style={[styles.primaryButtonText, { color: theme.buttonText }]}>MARQUER COMME TERMINÉ</Text>
+                                </TouchableOpacity>
+                            ) : (
+                                <View style={[styles.primaryButton, { backgroundColor: '#A0E8CF', opacity: 0.8 }]}>
+                                    <MaterialCommunityIcons name="medal" size={20} color="#000" style={{ marginRight: 8 }} />
+                                    <Text style={[styles.primaryButtonText, { color: '#000' }]}>SÉANCE COMPLÉTÉE</Text>
+                                </View>
+                            )}
                         </ScrollView>
                     </View>
                 </View>
@@ -241,10 +280,11 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     primaryButton: {
-        backgroundColor: '#000',
+        flexDirection: 'row',
         paddingVertical: 18,
         borderRadius: 30,
         alignItems: 'center',
+        justifyContent: 'center',
         marginTop: 16,
     },
     primaryButtonText: {

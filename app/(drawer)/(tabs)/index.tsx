@@ -53,9 +53,11 @@ export default function HomeScreen() {
 
   const dailyDuration = dailyWorkouts.reduce((acc, current) => acc + current.duration, 0);
 
+  const completedWorkouts = workouts.filter(w => w.status === 'terminé');
+
   // Global stats
-  const totalWorkouts = workouts.length;
-  const totalDuration = workouts.reduce((acc, current) => acc + current.duration, 0);
+  const totalWorkouts = completedWorkouts.length;
+  const totalDuration = completedWorkouts.reduce((acc, current) => acc + current.duration, 0);
   const totalCalories = totalDuration * 8; // approx 8 calories per minute
 
   return (

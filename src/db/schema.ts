@@ -6,5 +6,6 @@ export const workouts = sqliteTable('workouts', {
     duration: integer('duration').notNull(),
     intensity: text('intensity').notNull(), // faible, moyenne, élevée
     date: text('date').notNull(), // stored as ISO string
+    status: text('status').default('prévu').notNull(), // 'prévu' | 'terminé'
     notes: text('notes'),
 });

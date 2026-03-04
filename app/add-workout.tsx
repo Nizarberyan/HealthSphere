@@ -52,6 +52,7 @@ export default function AddWorkoutScreen() {
             duration: Number(duration),
             intensity,
             date: date.toISOString(),
+            status: 'prévu',
             notes
         });
 

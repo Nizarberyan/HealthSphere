@@ -7,5 +7,6 @@ export interface Workout {
     duration: number; // in minutes
     intensity: IntensityLevel;
     date: string; // ISO 8601 format
+    status: 'prévu' | 'terminé';
     notes?: string;
 }
