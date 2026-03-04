@@ -47,11 +47,20 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <WorkoutProvider>
-          <Stack>
-            <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
-            <Stack.Screen name="add-workout" options={{ presentation: 'modal', title: 'Ajouter une séance' }} />
-            <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-          </Stack>
+          <View style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#121212' : '#F8F9FA' }}>
+            <Stack screenOptions={{ contentStyle: { backgroundColor: colorScheme === 'dark' ? '#121212' : '#F8F9FA' } }}>
+              <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
+              <Stack.Screen name="add-workout" options={{ presentation: 'modal', title: 'Ajouter une séance' }} />
+              <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+              <Stack.Screen
+                name="workout/[id]"
+                options={{
+                  headerShown: false,
+                  contentStyle: { backgroundColor: colorScheme === 'dark' ? '#121212' : '#F8F9FA' },
+                }}
+              />
+            </Stack>
+          </View>
           <StatusBar style="auto" />
         </WorkoutProvider>
       </ThemeProvider>

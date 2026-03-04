@@ -49,7 +49,7 @@ export default function ExercisesScreen() {
     );
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]} edges={['top']}>
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]} edges={[]}>
             <StatusBar style={isDark ? "light" : "dark"} />
 
             <View style={styles.header}>

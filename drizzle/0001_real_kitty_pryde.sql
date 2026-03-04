@@ -1,0 +1,1 @@
+ALTER TABLE `workouts` ADD `status` text DEFAULT 'terminé' NOT NULL;

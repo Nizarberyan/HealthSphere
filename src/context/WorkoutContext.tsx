@@ -38,6 +38,7 @@ export const WorkoutProvider = ({ children }: { children: ReactNode }) => {
                 duration: w.duration,
                 intensity: w.intensity as any,
                 date: w.date,
+                status: (w.status as 'prévu' | 'terminé') || 'prévu',
                 notes: w.notes || undefined
             }));
 
@@ -53,7 +54,7 @@ export const WorkoutProvider = ({ children }: { children: ReactNode }) => {
     const addWorkout = async (workoutData: Omit<Workout, 'id'>) => {
         try {
             setError(null);
-            const id = Date.now().toString(); 
+            const id = Date.now().toString();
             const newDate = new Date(workoutData.date).toISOString();
 
             const newDbWorkout = {
@@ -62,6 +63,7 @@ export const WorkoutProvider = ({ children }: { children: ReactNode }) => {
                 duration: workoutData.duration,
                 intensity: workoutData.intensity,
                 date: newDate,
+                status: workoutData.status || 'prévu',
                 notes: workoutData.notes || null,
             };
 
@@ -73,6 +75,7 @@ export const WorkoutProvider = ({ children }: { children: ReactNode }) => {
                 duration: newDbWorkout.duration,
                 intensity: newDbWorkout.intensity as any,
                 date: newDbWorkout.date,
+                status: newDbWorkout.status as any,
                 notes: newDbWorkout.notes || undefined
             };
 
@@ -92,6 +95,7 @@ export const WorkoutProvider = ({ children }: { children: ReactNode }) => {
                     duration: updatedWorkout.duration,
                     intensity: updatedWorkout.intensity,
                     date: new Date(updatedWorkout.date).toISOString(),
+                    status: updatedWorkout.status,
                     notes: updatedWorkout.notes || null
                 })
                 .where(eq(workoutsSchema.id, updatedWorkout.id));
