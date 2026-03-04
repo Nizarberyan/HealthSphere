@@ -82,7 +82,6 @@ export default function WorkoutDetailsScreen() {
 
     return (
         <View style={[styles.container, { backgroundColor: theme.bg }]}>
-            <Stack.Screen options={{ headerShown: false }} />
             <StatusBar style="light" />
 
             <ImageBackground source={{ uri: getWorkoutImage(workout.type) }} style={styles.heroBackground}>
@@ -155,12 +154,12 @@ export default function WorkoutDetailsScreen() {
                                     onPress={handleMarkAsDone}
                                 >
                                     <MaterialCommunityIcons name="check-bold" size={20} color={theme.buttonText} style={{ marginRight: 8 }} />
-                                    <Text style={[styles.primaryButtonText, { color: theme.buttonText }]}>MARQUER COMME TERMINÉ</Text>
+                                    <Text style={[styles.primaryButtonText, { color: theme.buttonText }]}>Terminé</Text>
                                 </TouchableOpacity>
                             ) : (
-                                <View style={[styles.primaryButton, { backgroundColor: '#A0E8CF', opacity: 0.8 }]}>
-                                    <MaterialCommunityIcons name="medal" size={20} color="#000" style={{ marginRight: 8 }} />
-                                    <Text style={[styles.primaryButtonText, { color: '#000' }]}>SÉANCE COMPLÉTÉE</Text>
+                                <View style={[styles.primaryButton, { backgroundColor: '#80ffd3ff', opacity: 0.8 }]}>
+                                    <MaterialCommunityIcons name="medal" size={20} color="#FFF" style={{ marginRight: 8 }} />
+                                    <Text style={[styles.primaryButtonText, { color: '#FFF' }]}>Terminé</Text>
                                 </View>
                             )}
                         </ScrollView>
