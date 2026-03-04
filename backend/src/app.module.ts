@@ -4,12 +4,14 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ExercisesModule } from './exercises/exercises.module';
 import { FavoritesModule } from './favorites/favorites.module';
+import { WorkoutsModule } from './workouts/workouts.module';
 
 @Module({
   imports: [
     MongooseModule.forRoot(process.env.MONGODB_URI! || 'mongodb://localhost:27017/healthsphere'),
     ExercisesModule,
     FavoritesModule,
+    WorkoutsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

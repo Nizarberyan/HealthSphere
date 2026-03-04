@@ -2,8 +2,8 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
-import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import { Image, ImageBackground, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useWorkouts } from '@/src/context/WorkoutContext';
@@ -25,33 +25,7 @@ export default function HomeScreen() {
   };
 
   const router = useRouter();
-  const { workouts } = useWorkouts();
-
-  const [selectedDate, setSelectedDate] = useState<Date>(() => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d;
-  });
-
-  const dateStripDays = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    d.setDate(d.getDate() - 3 + i);
-
-    return {
-      date: d,
-      day: d.toLocaleDateString('en-US', { weekday: 'narrow' }),
-      num: d.getDate(),
-    };
-  });
-
-  const dailyWorkouts = workouts.filter((workout) => {
-    const workoutDate = new Date(workout.date);
-    workoutDate.setHours(0, 0, 0, 0);
-    return workoutDate.getTime() === selectedDate.getTime();
-  });
-
-  const dailyDuration = dailyWorkouts.reduce((acc, current) => acc + current.duration, 0);
+  const { workouts, refresh, isRefreshing } = useWorkouts();
 
   const completedWorkouts = workouts.filter(w => w.status === 'terminé');
 
@@ -90,7 +64,11 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={refresh} tintColor="#FF99CC" />}
+      >
         <Text style={[styles.pageTitle, { color: theme.textPrimary }]}>Statistiques</Text>
 
         {/* Global Stats Grid */}
@@ -112,33 +90,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Date Strip */}
-        <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>Calendrier</Text>
-        <View style={styles.dateStrip}>
-          {dateStripDays.map((item, index) => {
-            const isActive = item.date.getTime() === selectedDate.getTime();
-            return (
-              <TouchableOpacity
-                key={index}
-                onPress={() => setSelectedDate(item.date)}
-                style={[
-                  styles.dateItem,
-                  { borderColor: theme.chipBorder, backgroundColor: theme.bg },
-                  isActive && styles.dateItemActive
-                ]}
-              >
-                <Text style={[styles.dateDay, { color: theme.textSecondary }, isActive && styles.dateDayActive]}>
-                  {item.day}
-                </Text>
-                <Text style={[styles.dateNum, { color: theme.textPrimary }, isActive && styles.dateNumActive]}>
-                  {item.num}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        {/* Hero Card for today */}
+        {/* Hero Card */}
         <TouchableOpacity activeOpacity={0.9} onPress={() => router.push('/add-workout')} style={styles.heroCardContainer}>
           <ImageBackground source={{ uri: getWorkoutImage('All') }} style={styles.heroImage} imageStyle={styles.heroImageStyle}>
             <View style={styles.heroOverlay}>
@@ -151,13 +103,13 @@ export default function HomeScreen() {
               <View style={styles.heroContent}>
                 <Text style={styles.heroBigText} numberOfLines={1} adjustsFontSizeToFit>SÉANCES</Text>
                 <View style={styles.heroStatsRow}>
-                  <Text style={styles.heroStatsBig}>{dailyDuration}</Text>
-                  <Text style={styles.heroStatsSmall}>MIN TRAINED</Text>
+                  <Text style={styles.heroStatsBig}>{totalDuration}</Text>
+                  <Text style={styles.heroStatsSmall}>MIN TOTALES</Text>
                 </View>
               </View>
 
               <View style={styles.heroRightBar}>
-                <Text style={styles.heroRightBarText}>{dailyWorkouts.length} S.</Text>
+                <Text style={styles.heroRightBarText}>{totalWorkouts} S.</Text>
                 <View style={styles.barTrack}>
                   <View style={styles.barFill}></View>
                 </View>
@@ -290,40 +242,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     textAlign: 'center',
-  },
-  dateStrip: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    marginBottom: 32,
-  },
-  dateItem: {
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: 44,
-    height: 72,
-    borderRadius: 22,
-    borderWidth: 1,
-    paddingVertical: 12,
-  },
-  dateItemActive: {
-    backgroundColor: '#FF99CC',
-    borderColor: '#FF99CC',
-  },
-  dateDay: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  dateNum: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  dateDayActive: {
-    color: '#000',
-  },
-  dateNumActive: {
-    color: '#000',
-    fontWeight: 'bold',
   },
   heroCardContainer: {
     height: 280,

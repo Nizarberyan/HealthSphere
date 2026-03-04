@@ -3,7 +3,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useMemo } from 'react';
-import { SectionList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RefreshControl, SectionList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -47,7 +47,7 @@ export default function HistoryScreen() {
     };
 
     const router = useRouter();
-    const { workouts } = useWorkouts();
+    const { workouts, refresh, isRefreshing } = useWorkouts();
 
     // Group workouts by month and year
     const groupedWorkouts = useMemo(() => {
@@ -131,6 +131,7 @@ export default function HistoryScreen() {
                 contentContainerStyle={styles.listContent}
                 stickySectionHeadersEnabled={false}
                 showsVerticalScrollIndicator={false}
+                refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={refresh} tintColor="#FF99CC" />}
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
                         <MaterialCommunityIcons name="history" size={64} color={theme.textSecondary} style={{ marginBottom: 16 }} />

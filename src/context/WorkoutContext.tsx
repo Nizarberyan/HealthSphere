@@ -1,13 +1,13 @@
-import { desc, eq } from 'drizzle-orm';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { db } from '../db';
-import { workouts as workoutsSchema } from '../db/schema';
+import { workoutsApi } from '../api/workouts';
 import { Workout } from '../types/workout';
 
 interface WorkoutContextType {
     workouts: Workout[];
     isLoading: boolean;
+    isRefreshing: boolean;
     error: string | null;
+    refresh: () => Promise<void>;
     addWorkout: (workout: Omit<Workout, 'id'>) => Promise<void>;
     updateWorkout: (workout: Workout) => Promise<void>;
     deleteWorkout: (id: string) => Promise<void>;
@@ -18,6 +18,7 @@ export const WorkoutContext = createContext<WorkoutContextType | undefined>(unde
 export const WorkoutProvider = ({ children }: { children: ReactNode }) => {
     const [workouts, setWorkouts] = useState<Workout[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -28,60 +29,38 @@ export const WorkoutProvider = ({ children }: { children: ReactNode }) => {
         try {
             setIsLoading(true);
             setError(null);
-
-            const dbWorkouts = await db.select().from(workoutsSchema).orderBy(desc(workoutsSchema.date));
-
-            // Map the parsed database records to match the local Workout type
-            const mappedWorkouts: Workout[] = dbWorkouts.map((w: any) => ({
-                id: w.id,
-                type: w.type as any,
-                duration: w.duration,
-                intensity: w.intensity as any,
-                date: w.date,
-                status: (w.status as 'prévu' | 'terminé') || 'prévu',
-                notes: w.notes || undefined
-            }));
-
-            setWorkouts(mappedWorkouts);
+            const data = await workoutsApi.getAll();
+            setWorkouts(data);
         } catch (e) {
-            console.error('Failed to load workouts from Drizzle', e);
+            console.error('Failed to load workouts', e);
             setError('Failed to load workouts data');
         } finally {
             setIsLoading(false);
         }
     };
 
+    const refresh = async () => {
+        try {
+            setIsRefreshing(true);
+            setError(null);
+            const data = await workoutsApi.getAll();
+            setWorkouts(data);
+        } catch (e) {
+            console.error('Failed to refresh workouts', e);
+        } finally {
+            setIsRefreshing(false);
+        }
+    };
+
     const addWorkout = async (workoutData: Omit<Workout, 'id'>) => {
         try {
             setError(null);
-            const id = Date.now().toString();
-            const newDate = new Date(workoutData.date).toISOString();
-
-            const newDbWorkout = {
-                id,
-                type: workoutData.type,
-                duration: workoutData.duration,
-                intensity: workoutData.intensity,
-                date: newDate,
-                status: workoutData.status || 'prévu',
-                notes: workoutData.notes || null,
-            };
-
-            await db.insert(workoutsSchema).values(newDbWorkout);
-
-            const newWorkout: Workout = {
-                id: newDbWorkout.id,
-                type: newDbWorkout.type as any,
-                duration: newDbWorkout.duration,
-                intensity: newDbWorkout.intensity as any,
-                date: newDbWorkout.date,
-                status: newDbWorkout.status as any,
-                notes: newDbWorkout.notes || undefined
-            };
-
-            setWorkouts([newWorkout, ...workouts]);
+            const newWorkout = await workoutsApi.create(workoutData);
+            setWorkouts(prev =>
+                [newWorkout, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            );
         } catch (e) {
-            console.error('Failed to save workout to Drizzle', e);
+            console.error('Failed to add workout', e);
             setError('Failed to save workout data');
         }
     };
@@ -89,23 +68,10 @@ export const WorkoutProvider = ({ children }: { children: ReactNode }) => {
     const updateWorkout = async (updatedWorkout: Workout) => {
         try {
             setError(null);
-            await db.update(workoutsSchema)
-                .set({
-                    type: updatedWorkout.type,
-                    duration: updatedWorkout.duration,
-                    intensity: updatedWorkout.intensity,
-                    date: new Date(updatedWorkout.date).toISOString(),
-                    status: updatedWorkout.status,
-                    notes: updatedWorkout.notes || null
-                })
-                .where(eq(workoutsSchema.id, updatedWorkout.id));
-
-            const updatedWorkouts = workouts.map(workout =>
-                workout.id === updatedWorkout.id ? updatedWorkout : workout
-            );
-            setWorkouts(updatedWorkouts);
+            const saved = await workoutsApi.update(updatedWorkout);
+            setWorkouts(prev => prev.map(w => (w.id === saved.id ? saved : w)));
         } catch (e) {
-            console.error('Failed to update workout in Drizzle', e);
+            console.error('Failed to update workout', e);
             setError('Failed to update workout data');
         }
     };
@@ -113,11 +79,10 @@ export const WorkoutProvider = ({ children }: { children: ReactNode }) => {
     const deleteWorkout = async (id: string) => {
         try {
             setError(null);
-            await db.delete(workoutsSchema).where(eq(workoutsSchema.id, id));
-            const updatedWorkouts = workouts.filter(workout => workout.id !== id);
-            setWorkouts(updatedWorkouts);
+            await workoutsApi.remove(id);
+            setWorkouts(prev => prev.filter(w => w.id !== id));
         } catch (e) {
-            console.error('Failed to delete workout in Drizzle', e);
+            console.error('Failed to delete workout', e);
             setError('Failed to delete workout data');
         }
     };
@@ -127,7 +92,9 @@ export const WorkoutProvider = ({ children }: { children: ReactNode }) => {
             value={{
                 workouts,
                 isLoading,
+                isRefreshing,
                 error,
+                refresh,
                 addWorkout,
                 updateWorkout,
                 deleteWorkout,

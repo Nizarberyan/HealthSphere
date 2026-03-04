@@ -3,7 +3,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeInDown, FadeOutUp, LinearTransition } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -35,11 +35,31 @@ export default function ExercisesScreen() {
     };
 
     const router = useRouter();
-    const { workouts } = useWorkouts();
+    const { workouts, refresh, isRefreshing } = useWorkouts();
     const [selectedFilter, setSelectedFilter] = useState<WorkoutType | 'All'>('All');
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+    const dateStripDays = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        d.setDate(d.getDate() - 3 + i);
+        return {
+            date: d,
+            day: d.toLocaleDateString('fr-FR', { weekday: 'narrow' }),
+            num: d.getDate(),
+        };
+    });
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     const filteredWorkouts = workouts.filter((workout) => {
-        return selectedFilter === 'All' ? true : workout.type === selectedFilter;
+        if (workout.status === 'terminé') return false;
+        const typeMatch = selectedFilter === 'All' ? true : workout.type === selectedFilter;
+        if (!selectedDate) return typeMatch;
+        const workoutDate = new Date(workout.date);
+        workoutDate.setHours(0, 0, 0, 0);
+        return typeMatch && workoutDate.getTime() === selectedDate.getTime();
     });
 
     const renderItem = ({ item }: { item: Workout }) => (
@@ -59,6 +79,33 @@ export default function ExercisesScreen() {
                 </TouchableOpacity>
             </View>
 
+            {/* Date Strip */}
+            <View style={styles.dateStrip}>
+                {dateStripDays.map((item, index) => {
+                    const isActive = selectedDate?.getTime() === item.date.getTime();
+                    const isToday = today.getTime() === item.date.getTime();
+                    return (
+                        <TouchableOpacity
+                            key={index}
+                            onPress={() => setSelectedDate(isActive ? null : item.date)}
+                            style={[
+                                styles.dateItem,
+                                { borderColor: isToday && !isActive ? '#FF99CC55' : theme.chipBorder, backgroundColor: theme.bg },
+                                isActive && styles.dateItemActive,
+                            ]}
+                        >
+                            <Text style={[styles.dateDay, { color: isToday && !isActive ? '#FF99CC' : theme.textSecondary }, isActive && styles.dateDayActive]}>
+                                {item.day}
+                            </Text>
+                            <Text style={[styles.dateNum, { color: isToday && !isActive ? '#FF99CC' : theme.textPrimary }, isActive && styles.dateNumActive]}>
+                                {item.num}
+                            </Text>
+                        </TouchableOpacity>
+                    );
+                })}
+            </View>
+
+            {/* Type Filter */}
             <View style={styles.filterWrapper}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterContainer}>
                     {FILTER_TABS.map((tab) => {
@@ -78,7 +125,11 @@ export default function ExercisesScreen() {
                 </ScrollView>
             </View>
 
-            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            <ScrollView
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+                refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={refresh} tintColor="#FF99CC" />}
+            >
                 <View style={{ paddingHorizontal: 16 }}>
                     <Animated.FlatList
                         data={filteredWorkouts}
@@ -123,6 +174,41 @@ const styles = StyleSheet.create({
         borderRadius: 22,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    dateStrip: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingTop: 8,
+        marginBottom: 16,
+    },
+    dateItem: {
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: 44,
+        height: 72,
+        borderRadius: 22,
+        borderWidth: 1,
+        paddingVertical: 12,
+    },
+    dateItemActive: {
+        backgroundColor: '#FF99CC',
+        borderColor: '#FF99CC',
+    },
+    dateDay: {
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    dateNum: {
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    dateDayActive: {
+        color: '#000',
+    },
+    dateNumActive: {
+        color: '#000',
+        fontWeight: 'bold',
     },
     filterWrapper: {
         marginBottom: 16,
